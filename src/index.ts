@@ -80,52 +80,25 @@ const items: Item[] = [
 // _____________________________________________________________________________
 //
 
-const getInputHtml = (item: Item) => {
-  switch (item.type) {
-    case "radio":
-    case "checkbox":
-      let inputHtml = ""
-      item.values!.map((val) => {
-        inputHtml += `
-          <input type=${item.type} name=${val.value} value=${val.value} />
-          <label for=${val.value}>${val.label}</label>
-        `
-      })
-      return inputHtml
-    default:
-      const placeholder = item.placeholder ? item.placeholder : "";
-      return `<input placeholder=${placeholder} />`
-  }
-}
-
 function createInputRow(item: Item) {
-  const inputHtml = getInputHtml(item);
   return `
     <tr>
       <th>
-        <label>${item.label}</label>
       </th>
       <td>
-        ${inputHtml}
+        <input />
       </td>
     </tr>
   `;
 }
 
 function createSelectRow(item: Item) {
-  let options = ""
-  item.options!.map(val => {
-    options += `<option value=${val.value}>${val.text}</option>`
-  })
-    
   return `
     <tr>
       <th>
-        <label>${item.label}</label>
       </th>
       <td>
         <select>
-          ${options}
         </select>
       </td>
     </tr>
@@ -136,10 +109,9 @@ function createTextAreaRow(item: Item) {
   return `
     <tr>
       <th>
-        <label>${item.label}</label>
       </th>
       <td>
-        <textarea placeholder=${item.placeholder}></textarea>
+        <textarea></textarea>
       </td>
     </tr>
   `;
@@ -163,7 +135,7 @@ function createTable() {
 
 function createFormDom() {
   const form = document.getElementById("form");
-  form!.innerHTML = createTable();
+  form.innerHTML = createTable();
 }
 
 createFormDom();
