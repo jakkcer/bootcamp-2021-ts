@@ -1,12 +1,38 @@
-type Item = {
+type Item =
+  | TextInputItem
+  | CheckInputItem
+  | SelectItem
+  | TextareaItem;
+
+type TextInputItem = {
   name: string;
-  tagName: string;
-  type?: string;
+  tagName: "input";
+  type: "text" | "email" | "tel";
   label: string;
-  placeholder?: string;
-  values?: { label: string; value: number }[];
-  options?: { text: string; value: number }[];
+  placeholder: string;
 };
+
+type CheckInputItem = {
+  name: string;
+  tagName: "input";
+  type: "radio" | "checkbox";
+  label: string;
+  values: { label: string; value: number }[];
+};
+
+type SelectItem = {
+  name: string;
+  tagName: "select";
+  label: string;
+  options: { text: string; value: number }[];
+};
+
+type TextareaItem = {
+  name: string;
+  tagName: "textarea";
+  label: string;
+  placeholder: string;
+}
 
 const items: Item[] = [
   {
@@ -80,38 +106,70 @@ const items: Item[] = [
 // _____________________________________________________________________________
 //
 
-function createInputRow(item: Item) {
+const getCheckInputHtml = (item: CheckInputItem): string => {
+  return item.values!.map((val) => (`
+    <input type=${item.type} name=${val.value} value=${val.value} />
+    <label for=${val.value}>${val.label}</label>
+  `)).join("")
+}
+
+const getTextInputHtml = (item: TextInputItem): string => {
+  return `<input type=${item.type} placeholder=${item.placeholder} />`
+}
+
+function createInputRow(item: TextInputItem | CheckInputItem) {
+  let inputHtml = ""
+  switch (item.type) {
+    case "text":
+    case "email":
+    case "tel":
+      inputHtml = getTextInputHtml(item);
+      break
+    case "radio":
+    case "checkbox":
+      inputHtml = getCheckInputHtml(item);
+      break
+    default:
+      const check: never = item;
+      throw new Error(`Unhandled case: ${check}`);
+  }
   return `
     <tr>
       <th>
+        <label>${item.label}</label>
       </th>
       <td>
-        <input />
+        ${inputHtml}
       </td>
     </tr>
   `;
 }
 
-function createSelectRow(item: Item) {
+function createSelectRow(item: SelectItem) {
   return `
     <tr>
       <th>
+        <label>${item.label}</label>
       </th>
       <td>
         <select>
+          ${item.options.map(val => (
+            `<option value=${val.value}>${val.text}</option>`
+          )).join("")}
         </select>
       </td>
     </tr>
   `;
 }
 
-function createTextAreaRow(item: Item) {
+function createTextAreaRow(item: TextareaItem) {
   return `
     <tr>
       <th>
+        <label>${item.label}</label>
       </th>
       <td>
-        <textarea></textarea>
+        <textarea placeholder=${item.placeholder}></textarea>
       </td>
     </tr>
   `;
@@ -127,6 +185,9 @@ function createTable() {
           return createSelectRow(item);
         case "textarea":
           return createTextAreaRow(item);
+        default:
+          const check = item;
+          throw new Error(`Unhandled item: ${item}`);
       }
     })
     .join("");
@@ -135,6 +196,9 @@ function createTable() {
 
 function createFormDom() {
   const form = document.getElementById("form");
+  if (!form) {
+    throw new Error("no form");
+  }
   form.innerHTML = createTable();
 }
 
